@@ -1,0 +1,1108 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Riego IoT Juan Bosco</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Concepto: banco de pruebas de campo. Fondo verde-gris muy claro, tinta verde oscura, agua como único acento. */
+:root{
+  --bg:#F2F5F1; --surface:#FFFFFF; --surface-2:#E7EEE6; --line:#D2DCD0;
+  --fg:#13241B; --muted:#51655A; --accent:#0B6E99; --accent-fg:#FFFFFF; --accent-soft:#D6EBF4;
+  --soil-dry:#CDB594; --soil-wet:#7C5236; --good:#1B7F47; --warn:#9A6414; --bad:#B8392B;
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1611; --surface:#14201A; --surface-2:#1B2A22; --line:#28392F;
+  --fg:#E4EEE6; --muted:#93A89A; --accent:#4DB6E0; --accent-fg:#06222E; --accent-soft:#12303C;
+  --soil-dry:#5A4A38; --soil-wet:#A7714A; --good:#4FC37F; --warn:#E0AE4A; --bad:#F0766A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1611; --surface:#14201A; --surface-2:#1B2A22; --line:#28392F;
+  --fg:#E4EEE6; --muted:#93A89A; --accent:#4DB6E0; --accent-fg:#06222E; --accent-soft:#12303C;
+  --soil-dry:#5A4A38; --soil-wet:#A7714A; --good:#4FC37F; --warn:#E0AE4A; --bad:#F0766A; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.5}
+*{box-sizing:border-box}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(26px,5vw,38px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:21px;font-weight:700;margin-bottom:6px}
+h3{font-size:15px;font-weight:700;margin-bottom:8px}
+p{margin:0 0 10px;max-width:68ch}
+a{color:var(--accent)}
+.eyebrow{font:500 12px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header.top{display:flex;flex-direction:column;gap:6px;padding-bottom:16px}
+.tagline{color:var(--muted);max-width:70ch;margin:0}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:20px;scrollbar-width:thin}
+nav.tabs a{flex:none;padding:10px 14px;text-decoration:none;color:var(--muted);font-weight:500;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+nav.tabs a:hover{color:var(--fg)}
+nav.tabs a[aria-current="page"]{color:var(--fg);border-bottom-color:var(--accent)}
+.view[hidden]{display:none}
+.notice{background:var(--surface-2);border-left:3px solid var(--warn);padding:10px 14px;margin-bottom:16px;font-size:14px;max-width:none}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+.section{margin-top:28px}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:7px 12px;font-weight:500;font-size:14px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.seg button{background:var(--surface);border:0;border-right:1px solid var(--line);padding:7px 12px;font-size:14px;font-weight:500}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font:500 12px var(--font-mono);border:1px solid currentColor;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.e0{color:var(--muted)} .pill.e1{color:var(--accent)} .pill.e2{color:var(--warn)} .pill.e3{color:var(--bad)}
+.pill.ok{color:var(--good)} .pill.pend{color:var(--warn)} .pill.doc{color:var(--muted)}
+/* simulador */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:16px}
+.strip .stat{background:var(--surface);padding:10px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.lbl{font:500 11px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.big{font-size:28px;font-weight:500;line-height:1}
+.sim-grid{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.sim-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+svg.visual{width:100%;height:auto;display:block}
+svg .t{fill:var(--fg);font:500 12px var(--font-mono)} svg .tm{fill:var(--muted);font:400 11px var(--font-mono)}
+svg .box{fill:var(--surface-2);stroke:var(--line);stroke-width:1.5}
+svg .wire{stroke:var(--muted);stroke-width:2;fill:none}
+.hose{stroke:var(--line);stroke-width:5;fill:none;stroke-linecap:round}
+.hose.on{stroke:var(--accent);stroke-dasharray:3 9;animation:flow .7s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-12}}
+@media (prefers-reduced-motion:reduce){.hose.on{animation:none;stroke-dasharray:none}}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.field{display:grid;grid-template-columns:minmax(110px,150px) minmax(0,1fr) 70px;gap:10px;align-items:center;margin-bottom:8px}
+.field label{font-size:13px;color:var(--muted)}
+.field output{font:500 13px var(--font-mono);text-align:right}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=number],input[type=text],select{background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:6px 8px;min-width:0;width:100%}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;margin:6px 0}
+.msg{min-height:20px;font-size:13px;color:var(--bad);margin:4px 0 0}
+.term{background:var(--surface-2);border:1px solid var(--line);border-radius:5px;font:400 12.5px/1.5 var(--font-mono);padding:10px;height:150px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.term .in{color:var(--accent)}
+form.cmd{display:flex;gap:8px;margin-top:8px}
+canvas#chart{width:100%;height:260px;display:block}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px;margin-top:12px}
+.metrics .m{display:flex;flex-direction:column;gap:2px}
+.metrics .v{font:500 20px var(--font-mono)}
+.logwrap{overflow-x:auto;max-height:340px;overflow-y:auto;border:1px solid var(--line);border-radius:5px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font:500 11px var(--font-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--surface-2);position:sticky;top:0}
+td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+/* requerimientos */
+.req{border-top:1px solid var(--line)}
+.req details{padding:12px 0}
+.req summary{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px;align-items:start;cursor:pointer;list-style:none}
+.req summary::-webkit-details-marker{display:none}
+.req .id{font:500 13px var(--font-mono);color:var(--accent)}
+.req .tags{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.req .body{padding:10px 0 0 76px;display:grid;gap:6px;font-size:14px}
+@media (max-width:640px){.req summary{grid-template-columns:52px minmax(0,1fr)} .req .tags{grid-column:2;justify-content:flex-start} .req .body{padding-left:0}}
+.summarybar{display:flex;flex-wrap:wrap;gap:20px;margin:12px 0 16px}
+/* arquitectura */
+.flow{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+@media (min-width:820px){.flow{flex-direction:row;align-items:stretch}}
+.flow .arrow{align-self:center;color:var(--muted);font:500 18px var(--font-mono)}
+.flow .arrow::before{content:"↓"} @media (min-width:820px){.flow .arrow::before{content:"→"}}
+.blk{flex:1;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.blk[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.blk b{font-family:var(--font-display);font-size:15px}
+.blk span{font-size:12.5px;color:var(--muted)}
+.detail{margin-top:12px;display:grid;gap:6px;font-size:14px}
+.detail dt{font:500 11px var(--font-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.detail dd{margin:0 0 6px}
+.states{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:12px}
+.state{border:1px solid var(--line);border-radius:6px;padding:12px;background:var(--surface);display:grid;gap:6px;font-size:13.5px;align-content:start}
+.state.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--accent-soft)}
+.state b{font:500 13px var(--font-mono)}
+/* pruebas */
+.test{display:grid;grid-template-columns:48px minmax(0,1fr) 150px;gap:6px 14px;padding:12px 0;border-top:1px solid var(--line);align-items:start}
+.test .id{font:500 13px var(--font-mono);color:var(--accent)}
+.test .ctl{display:grid;gap:6px}
+.test small{color:var(--muted);display:block}
+@media (max-width:700px){.test{grid-template-columns:44px minmax(0,1fr)} .test .ctl{grid-column:1/-1}}
+.progress{height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.progress>i{display:block;height:100%;background:var(--good);width:0;transition:width .2s}
+.calc td input{min-width:84px}
+.calc-wrap{overflow-x:auto}
+/* codigo */
+pre.code{background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:12px;overflow:auto;max-height:420px;font:400 12.5px/1.5 var(--font-mono);margin:8px 0 0}
+details.file{border-top:1px solid var(--line);padding:10px 0}
+details.file summary{cursor:pointer;font-weight:600}
+.two{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)} @media (min-width:820px){.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+/* entrega */
+.timeline{display:flex;height:44px;border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.timeline button{border:0;border-right:1px solid var(--bg);background:var(--surface-2);padding:0 4px;font:500 11px var(--font-mono);overflow:hidden;white-space:nowrap}
+.timeline button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.check-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}
+.check-item input{margin-top:4px;accent-color:var(--accent)}
+#fb{position:fixed;inset:auto 0 0 0;background:var(--surface);border-top:1px solid var(--line);padding:12px max(16px,env(safe-area-inset-left,0px)) calc(12px + env(safe-area-inset-bottom,0px));z-index:20}
+#fb textarea{width:100%;height:110px;font:12px var(--font-mono)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Proyecto de grado 202016907 · UNAD · Ingeniería de Sistemas</div>
+    <h1>Riego IoT Juan Bosco</h1>
+    <p class="tagline">Simulador del control de riego con la misma lógica del firmware, más los requerimientos, la arquitectura, el plan de pruebas y la lista de entrega de la Fase 4. Sistema de riego automatizado con ESP32 para cultivos de la vereda Juan Bosco, Villavicencio.</p>
+  </header>
+
+  <nav class="tabs" aria-label="Secciones">
+    <a href="#simulador">Simulador</a>
+    <a href="#requerimientos">Requerimientos</a>
+    <a href="#arquitectura">Arquitectura</a>
+    <a href="#pruebas">Pruebas</a>
+    <a href="#codigo">Código</a>
+    <a href="#entrega">Entrega</a>
+  </nav>
+
+  <!-- ============ SIMULADOR ============ -->
+  <section class="view" id="v-simulador">
+    <p class="notice">Simulación con un suelo ficticio. Los datos no son mediciones de campo y no sirven para afirmar ahorro de agua. Sirve para entender y demostrar la lógica; los resultados reales salen del prototipo físico.</p>
+
+    <div class="strip" aria-live="off">
+      <div class="stat"><span class="lbl">Estado</span><span id="pillEstado" class="pill e0">REPOSO</span></div>
+      <div class="stat"><span class="lbl">Humedad medida</span><span class="big mono" id="humMed">--</span></div>
+      <div class="stat"><span class="lbl">Lectura ADC</span><span class="mono" id="rawTxt">--</span></div>
+      <div class="stat"><span class="lbl">Relé</span><span class="mono" id="releTxt">APAGADO</span></div>
+      <div class="stat"><span class="lbl">Modo</span><span class="mono" id="modoTxt">AUTO</span></div>
+      <div class="stat"><span class="lbl">Reloj simulado</span><span class="mono" id="relojTxt">D1 06:00</span></div>
+    </div>
+
+    <div class="sim-grid">
+      <div class="col">
+        <div class="panel">
+          <svg class="visual" viewBox="0 0 400 300" role="img" aria-label="Esquema del suelo con sensor, ESP32, relé y bomba">
+            <rect x="30" y="40" width="150" height="220" fill="var(--soil-dry)"/>
+            <rect id="soilWet" x="30" y="150" width="150" height="110" fill="var(--soil-wet)"/>
+            <rect x="30" y="40" width="150" height="220" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+            <line id="lnInf" x1="30" x2="190" y1="194" y2="194" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="5 4"/>
+            <line id="lnSup" x1="30" x2="190" y1="128" y2="128" stroke="var(--good)" stroke-width="1.5" stroke-dasharray="5 4"/>
+            <text id="txInf" class="tm" x="192" y="198">inf 30 %</text>
+            <text id="txSup" class="tm" x="192" y="132">sup 60 %</text>
+            <rect x="100" y="22" width="8" height="150" rx="2" fill="var(--fg)" opacity=".85"/>
+            <path class="wire" d="M104 22 V8 H300 V20"/>
+            <text id="txHum" class="t" x="40" y="62">--</text>
+            <rect class="box" x="230" y="20" width="140" height="56" rx="5"/>
+            <text class="t" x="300" y="44" text-anchor="middle">ESP32</text>
+            <text class="tm" x="300" y="62" text-anchor="middle">GPIO34 · GPIO26</text>
+            <path class="wire" d="M300 76 V108"/>
+            <rect class="box" x="230" y="108" width="140" height="56" rx="5"/>
+            <text class="t" x="256" y="132">RELÉ</text>
+            <circle id="led" cx="346" cy="128" r="8" fill="var(--muted)"/>
+            <text id="txRele" class="tm" x="300" y="152" text-anchor="middle">apagado</text>
+            <path class="wire" d="M300 164 V196"/>
+            <rect class="box" x="230" y="196" width="140" height="56" rx="5"/>
+            <text class="t" x="300" y="220" text-anchor="middle">BOMBA</text>
+            <text id="txBomba" class="tm" x="300" y="238" text-anchor="middle">sin riego</text>
+            <path id="hose" class="hose" d="M230 224 H205 Q196 224 196 214 V62 Q196 48 182 48 H150"/>
+            <circle id="drop" cx="150" cy="48" r="0" fill="var(--accent)"/>
+          </svg>
+          <div class="legend"><span><i style="background:var(--warn)"></i>umbral inferior</span><span><i style="background:var(--good)"></i>umbral superior</span><span>Zona oscura: humedad real del suelo simulado</span></div>
+        </div>
+
+        <div class="panel">
+          <h3>Monitor serie</h3>
+          <div class="term" id="term" role="log" aria-live="polite"></div>
+          <form class="cmd" id="cmdForm">
+            <input type="text" id="cmdIn" placeholder="p. ej. modo PARADA · umbral_inf 25 · estado" autocomplete="off" aria-label="Comando">
+            <button class="btn primary" type="submit">Enviar</button>
+          </form>
+          <p class="muted" style="font-size:13px;margin:8px 0 0">Mismos comandos que el firmware: modo, umbral_inf, umbral_sup, tmax_min, intervalo_s, cal_seco, cal_humedo, estado.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="panel">
+          <h3>Escenarios</h3>
+          <div class="chips" id="presets">
+            <button class="chip" data-p="E1">E1 Suelo seco al arranque</button>
+            <button class="chip" data-p="E2">E2 Suelo húmedo</button>
+            <button class="chip" data-p="E3">E3 Falla de sensor</button>
+            <button class="chip" data-p="E4">E4 Bomba sin efecto</button>
+          </div>
+          <div class="row" style="margin-top:14px">
+            <span class="lbl">Velocidad</span>
+            <div class="seg" id="speed">
+              <button data-s="60">60×</button><button data-s="300">300×</button><button data-s="1200">1200×</button><button data-s="3600">3600×</button>
+            </div>
+            <button class="btn" id="btnPausa">Pausar</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Control</h3>
+          <div class="row" style="margin-bottom:12px">
+            <span class="lbl">Modo</span>
+            <div class="seg" id="modos">
+              <button data-m="AUTO">AUTO</button><button data-m="MANUAL">MANUAL</button><button data-m="PARADA">PARADA</button>
+            </div>
+          </div>
+          <div class="field"><label for="rInf">Umbral inferior</label><input id="rInf" type="range" min="0" max="100" step="1"><output id="oInf"></output></div>
+          <div class="field"><label for="rSup">Umbral superior</label><input id="rSup" type="range" min="0" max="100" step="1"><output id="oSup"></output></div>
+          <div class="field"><label for="rMax">Tiempo máx. de bombeo</label><input id="rMax" type="range" min="1" max="60" step="1"><output id="oMax"></output></div>
+          <div class="field"><label for="rInt">Intervalo de medición</label><input id="rInt" type="range" min="2" max="120" step="1"><output id="oInt"></output></div>
+          <p class="msg" id="msgParam" role="status"></p>
+        </div>
+
+        <div class="panel">
+          <h3>Suelo y sensor (simulación)</h3>
+          <div class="field"><label for="rSec">Secado del suelo</label><input id="rSec" type="range" min="0" max="60" step="1"><output id="oSec"></output></div>
+          <div class="field"><label for="rApo">Aporte de la bomba</label><input id="rApo" type="range" min="1" max="12" step="0.5"><output id="oApo"></output></div>
+          <label class="check"><input type="checkbox" id="cFalla"> Sensor desconectado (lectura 0)</label>
+          <label class="check"><input type="checkbox" id="cSinEf"> Bomba sin efecto (sin agua o tubería obstruida)</label>
+          <div class="row" style="margin-top:8px">
+            <button class="btn" id="btnLluvia">Lluvia +20 %</button>
+            <button class="btn" id="btnSeco">Secar −20 %</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel section">
+      <div class="row" style="justify-content:space-between">
+        <h3 style="margin:0">Humedad en el tiempo</h3>
+        <div class="seg" id="ventana"><button data-w="1">1 h</button><button data-w="6">6 h</button><button data-w="24">24 h</button></div>
+      </div>
+      <canvas id="chart" role="img" aria-label="Gráfica de humedad real y medida con umbrales y periodos de riego"></canvas>
+      <div class="legend"><span><i style="background:var(--accent)"></i>humedad medida por el sensor</span><span><i style="background:var(--muted)"></i>humedad real simulada</span><span><i style="background:var(--accent);opacity:.3;height:10px"></i>relé encendido</span></div>
+      <div class="metrics">
+        <div class="m"><span class="lbl">Activaciones</span><span class="v" id="mAct">0</span></div>
+        <div class="m"><span class="lbl">Min. de bombeo</span><span class="v" id="mBomb">0</span></div>
+        <div class="m"><span class="lbl">Bloqueos por tiempo</span><span class="v" id="mBloq">0</span></div>
+        <div class="m"><span class="lbl">Fallas de sensor</span><span class="v" id="mFalla">0</span></div>
+        <div class="m"><span class="lbl">Humedad real mín–máx</span><span class="v" id="mRango">--</span></div>
+      </div>
+    </div>
+
+    <div class="panel section">
+      <div class="row" style="justify-content:space-between">
+        <h3 style="margin:0">Registro (formato del CSV del ESP32)</h3>
+        <div class="row">
+          <div class="seg" id="logFiltro"><button data-f="EVENTO">Solo eventos</button><button data-f="TODO">Todo</button></div>
+          <button class="btn" id="btnCsv">Copiar CSV</button>
+        </div>
+      </div>
+      <div class="logwrap" style="margin-top:10px"><table><thead><tr><th>marca_tiempo</th><th>tipo</th><th>raw_adc</th><th>humedad_pct</th><th>estado</th><th>rele</th><th>modo</th><th>detalle</th></tr></thead><tbody id="logBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ============ REQUERIMIENTOS ============ -->
+  <section class="view" id="v-requerimientos" hidden>
+    <h2>Requerimientos y trazabilidad</h2>
+    <p class="muted">Requerimientos de la Tabla 7 del documento maestro, cada uno con el módulo que lo implementa y la forma de verificarlo.</p>
+    <div class="summarybar" id="reqResumen"></div>
+    <div class="chips" id="reqFiltros">
+      <button class="chip" data-f="todos" aria-pressed="true">Todos</button>
+      <button class="chip" data-f="RF" aria-pressed="false">Funcionales</button>
+      <button class="chip" data-f="RNF" aria-pressed="false">No funcionales</button>
+      <button class="chip" data-f="Alta" aria-pressed="false">Prioridad alta</button>
+      <button class="chip" data-f="hw" aria-pressed="false">Falta prueba física</button>
+    </div>
+    <div class="req" id="reqLista" style="margin-top:14px"></div>
+  </section>
+
+  <!-- ============ ARQUITECTURA ============ -->
+  <section class="view" id="v-arquitectura" hidden>
+    <h2>Arquitectura del prototipo</h2>
+    <p class="muted">Selecciona un bloque para ver su función, sus pines y los requerimientos que cubre.</p>
+    <div class="eyebrow" style="margin:14px 0 6px">Flujo de control</div>
+    <div class="flow" id="flow1"></div>
+    <div class="eyebrow" style="margin:16px 0 6px">Flujo de datos</div>
+    <div class="flow" id="flow2"></div>
+    <div class="panel" style="margin-top:12px"><dl class="detail" id="detalle"></dl></div>
+
+    <div class="section">
+      <h2>Estados del control</h2>
+      <p class="muted">El estado resaltado es el del simulador en este momento.</p>
+      <div class="states" id="estados"></div>
+    </div>
+  </section>
+
+  <!-- ============ PRUEBAS ============ -->
+  <section class="view" id="v-pruebas" hidden>
+    <h2>Pruebas con el prototipo físico</h2>
+    <p>Marca el resultado de cada prueba cuando la hagas. Lo que registres se guarda en este navegador; usa "Copiar tabla" para llevarlo al documento maestro.</p>
+    <div class="row" style="margin:8px 0 14px"><div class="progress" style="flex:1;min-width:160px"><i id="pgPruebas"></i></div><span class="mono" id="pgTxt">0 de 13 cumplen</span><button class="btn" id="btnTabla">Copiar tabla</button></div>
+    <div id="pruebasLista"></div>
+
+    <div class="section">
+      <h2>Calculadora de calibración</h2>
+      <p class="muted">Ingresa los valores ADC de tu sensor en seco y saturado, y las muestras de suelo pesadas antes y después de secarlas. Calcula el error absoluto medio y un ajuste lineal. Las filas iniciales son ejemplos: reemplázalas con tus datos.</p>
+      <div class="two">
+        <div class="field" style="grid-template-columns:130px minmax(0,1fr)"><label for="cSeco">ADC en seco</label><input type="number" id="cSeco" value="3000"></div>
+        <div class="field" style="grid-template-columns:130px minmax(0,1fr)"><label for="cHum">ADC saturado</label><input type="number" id="cHum" value="1300"></div>
+      </div>
+      <div class="calc-wrap panel" style="margin-top:8px">
+        <table class="calc"><thead><tr><th>Muestra</th><th>Masa húmeda (g)</th><th>Masa seca (g)</th><th>Lectura ADC</th><th>Humedad gravimétrica</th><th>Sensor</th><th>Error</th></tr></thead><tbody id="calBody"></tbody></table>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="calAdd">Agregar muestra</button><button class="btn" id="calClr">Borrar filas</button></div>
+      <div class="metrics" id="calRes"></div>
+    </div>
+  </section>
+
+  <!-- ============ CÓDIGO ============ -->
+  <section class="view" id="v-codigo" hidden>
+    <h2>Código del firmware</h2>
+    <p class="muted">Estos dos módulos son los que probé automáticamente (38 pruebas) y los que usa este simulador. El proyecto completo viaja en el archivo riego-iot.zip.</p>
+    <details class="file" open><summary>control_riego.h · lógica de decisión</summary><div class="row" style="margin-top:8px"><button class="btn" data-copy="control">Copiar</button></div><pre class="code" id="codeControl"></pre></details>
+    <details class="file"><summary>sensor_utils.h · conversión y validación</summary><div class="row" style="margin-top:8px"><button class="btn" data-copy="sensor">Copiar</button></div><pre class="code" id="codeSensor"></pre></details>
+
+    <div class="two section">
+      <div class="panel">
+        <h3>Conexión (baja tensión)</h3>
+        <table><thead><tr><th>Componente</th><th>Pines</th><th>ESP32 / fuente</th></tr></thead><tbody>
+          <tr><td>Sensor capacitivo</td><td>VCC · GND · AOUT</td><td>3.3 V · GND · GPIO 34</td></tr>
+          <tr><td>Módulo relé</td><td>VCC · GND · IN</td><td>5 V · GND · GPIO 26</td></tr>
+          <tr><td>Bomba o electroválvula</td><td>COM · NO del relé</td><td>Fuente propia con fusible</td></tr>
+        </tbody></table>
+        <p class="muted" style="margin-top:10px;font-size:13px">Diodo de rueda libre si el actuador es motor DC o bobina. No conectar tensión de red. Proteger el montaje del agua.</p>
+      </div>
+      <div class="panel">
+        <h3>Para cargarlo al ESP32</h3>
+        <ol style="margin:0;padding-left:20px;display:grid;gap:4px">
+          <li>Instala Arduino IDE, el soporte "esp32 by Espressif" y la librería PubSubClient.</li>
+          <li>Copia <span class="mono">secrets.example.h</span> como <span class="mono">secrets.h</span> y completa Wi-Fi y MQTT.</li>
+          <li>Elige "ESP32 Dev Module" y carga <span class="mono">riego_iot.ino</span>.</li>
+          <li>Abre el Monitor Serie a 115200 y calibra antes de regar.</li>
+          <li>Sube la carpeta a GitHub sin <span class="mono">secrets.h</span>.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ENTREGA ============ -->
+  <section class="view" id="v-entrega" hidden>
+    <h2>Entrega de la Fase 4</h2>
+    <div class="row" style="gap:24px;margin:6px 0 16px"><div><div class="lbl">Cierre de la actividad</div><div class="mono" style="font-size:20px" id="cuenta">--</div></div><p class="muted" style="margin:0;font-size:13px">Domingo 22 de noviembre de 2026. Confirma la hora exacta en el entorno de evaluación.</p></div>
+
+    <div class="two">
+      <div class="panel">
+        <h3>Lista de entrega</h3>
+        <div class="progress" style="margin-bottom:6px"><i id="pgEntrega"></i></div>
+        <div id="checks"></div>
+      </div>
+      <div class="panel">
+        <h3>Evidencia de nivel TRL5</h3>
+        <div style="display:grid;gap:12px;font-size:14px">
+          <div><span class="pill ok">Hecho</span> <b>TRL3-4.</b> Lógica con 38 pruebas automáticas, simulación de 4 escenarios y sintaxis del firmware verificada.</div>
+          <div><span class="pill pend">Pendiente</span> <b>TRL4.</b> ESP32, sensor, relé y bomba integrados en banco de pruebas, con calibración.</div>
+          <div><span class="pill pend">Pendiente</span> <b>TRL5.</b> Prototipo probado con suelo real o entorno controlado equivalente: error de lectura, % de activaciones correctas, tiempo de respuesta y estabilidad.</div>
+        </div>
+        <p class="muted" style="font-size:13px;margin-top:12px">El firmware todavía no se ha ejecutado en un ESP32 real. Los resultados del documento deben salir de las pruebas físicas.</p>
+      </div>
+    </div>
+
+    <div class="panel section">
+      <h3>Guion del video (máximo 10 minutos, cámara encendida todo el tiempo)</h3>
+      <div class="timeline" id="timeline"></div>
+      <p id="tlDetalle" style="margin:12px 0 0"></p>
+    </div>
+  </section>
+</div>
+
+<div id="fb" hidden><div class="row" style="justify-content:space-between;margin-bottom:6px"><span>No se pudo copiar automáticamente. Selecciona el texto y cópialo (Ctrl+C).</span><button class="btn" id="fbClose">Cerrar</button></div><textarea id="fbText" readonly aria-label="Texto para copiar"></textarea></div>
+
+<script>
+(function(){
+'use strict';
+const $=(id)=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+
+// <logic>
+const REPOSO=0,REGANDO=1,BLOQUEO=2,FALLA=3;
+const AUTO=0,MANUAL=1,PARADA=2;
+const ESTADOS=['REPOSO','REGANDO','BLOQUEO_TIEMPO','FALLA_SENSOR'];
+const MODOS=['AUTO','MANUAL_ON','PARADA'];
+function defParam(){return {inf:30,sup:60,tMax:10*60000,espera:15*60000};}
+class ControlRiego{
+  constructor(){this.param=defParam();this.modo=AUTO;this.estado=REPOSO;this.tEstado=0;}
+  configurar(p){
+    if(!(p.inf>=0&&p.sup<=100&&p.inf<p.sup))return false;
+    if(!(p.tMax>0))return false;
+    this.param={inf:p.inf,sup:p.sup,tMax:p.tMax,espera:p.espera};return true;
+  }
+  setModo(m,ahora){if(m===this.modo)return;this.modo=m;if(m===PARADA)this._cambiar(REPOSO,ahora);}
+  _cambiar(e,t){this.estado=e;this.tEstado=t;}
+  _forzar(e,t){if(this.estado===e)return false;this._cambiar(e,t);return true;}
+  _armar(cambio,previo){return {estado:this.estado,releOn:this.estado===REGANDO,cambioEstado:cambio||this.estado!==previo};}
+  actualizar(h,valida,ahora){
+    let cambio=false;const previo=this.estado;const p=this.param;
+    if(this.modo===PARADA){cambio=this._forzar(REPOSO,ahora);return this._armar(cambio,previo);}
+    if(!valida){cambio=this._forzar(FALLA,ahora);return this._armar(cambio,previo);}
+    if(this.estado===FALLA)this._cambiar(REPOSO,ahora);
+    if(this.estado===BLOQUEO){
+      if(((ahora-this.tEstado)>>>0)>=p.espera)this._cambiar(REPOSO,ahora);
+      return this._armar(this.estado!==previo,previo);
+    }
+    if(this.modo===MANUAL){
+      if(this.estado!==REGANDO)this._cambiar(REGANDO,ahora);
+    }else{
+      if(this.estado===REPOSO&&h<p.inf)this._cambiar(REGANDO,ahora);
+      else if(this.estado===REGANDO&&h>=p.sup)this._cambiar(REPOSO,ahora);
+    }
+    if(this.estado===REGANDO&&((ahora-this.tEstado)>>>0)>=p.tMax)this._cambiar(BLOQUEO,ahora);
+    return this._armar(this.estado!==previo,previo);
+  }
+}
+function defCalib(){return {seco:3000,humedo:1300,min:100,max:4000};}
+const lecturaValida=(raw,c)=>raw>=c.min&&raw<=c.max;
+function rawAPct(raw,c){
+  if(c.seco===c.humedo)return 0;
+  return clamp(100*(c.seco-raw)/(c.seco-c.humedo),0,100);
+}
+function promedioValido(arr,c){
+  let s=0,v=0;
+  for(const r of arr){if(lecturaValida(r,c)){s+=r;v++;}}
+  if(v===0||v<Math.floor((arr.length+1)/2))return null;
+  return Math.trunc(s/v);
+}
+// </logic>
+
+/* ---------- Estado de la simulación ---------- */
+const PHYS={seco:3000,humedo:1300};
+const rawFis=(p)=>PHYS.seco-(p/100)*(PHYS.seco-PHYS.humedo);
+const ruido=()=>(Math.random()+Math.random()+Math.random()-1.5)*30;
+const PRESETS={
+  E1:{hum:15,sched:null,sinEfecto:false},
+  E2:{hum:70,sched:null,sinEfecto:false},
+  E3:{hum:50,sched:[100,160],sinEfecto:false},
+  E4:{hum:20,sched:null,sinEfecto:true}
+};
+let control,calib,sim,metr,logRows,hist,filtroLog='EVENTO',presetActual='E1';
+const cfg={secado:18,aporte:6,sinEfecto:false,manualFalla:false,sched:null,intervaloMs:10000,speed:300,pausa:false,ventana:6};
+
+function clockStr(ms,seg){
+  const s=Math.floor(ms/1000)+6*3600;
+  const d=Math.floor(s/86400)+1,h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60),x=s%60;
+  const p=(n)=>String(n).padStart(2,'0');
+  return 'D'+d+' '+p(h)+':'+p(m)+(seg?':'+p(x):'');
+}
+function logRow(tipo,detalle){
+  logRows.push({marca:clockStr(sim.t,true),tipo,raw:sim.raw,hum:sim.humMed,estado:ESTADOS[control.estado],rele:control.estado===REGANDO?1:0,modo:MODOS[control.modo],detalle:detalle||''});
+  if(logRows.length>3000)logRows.splice(0,500);
+  logDirty=true;
+}
+let logDirty=true;
+function schedActive(){return cfg.sched&&(sim.t/60000)>=cfg.sched[0]&&(sim.t/60000)<cfg.sched[1];}
+
+function ciclo(){
+  const desconectado=cfg.manualFalla||schedActive();
+  const m=[];
+  for(let i=0;i<8;i++)m.push(desconectado?0:Math.round(rawFis(sim.hum)+ruido()));
+  const prom=promedioValido(m,calib);
+  sim.ok=prom!==null;
+  sim.raw=sim.ok?prom:m[0];
+  sim.humMed=sim.ok?rawAPct(sim.raw,calib):0;
+  const s=control.actualizar(sim.humMed,sim.ok,sim.t);
+  sim.rele=s.releOn;
+  if(s.cambioEstado){
+    if(s.estado===REGANDO)metr.act++;
+    if(s.estado===BLOQUEO)metr.bloq++;
+    if(s.estado===FALLA)metr.falla++;
+    logRow('EVENTO','cambio_de_estado');
+  }
+  if(sim.t-sim.ultReg>=60000){sim.ultReg=sim.t;logRow('LECTURA','');}
+}
+function avance(dt){
+  let rest=dt;
+  while(rest>0){
+    const d=Math.min(rest,10000);
+    sim.hum-=cfg.secado*d/3600000;
+    if(sim.rele&&!cfg.sinEfecto)sim.hum+=cfg.aporte*d/60000;
+    sim.hum=clamp(sim.hum,0,100);
+    rest-=d;
+  }
+  if(sim.rele)metr.bombeoMs+=dt;
+  metr.hMin=Math.min(metr.hMin,sim.hum);metr.hMax=Math.max(metr.hMax,sim.hum);
+}
+function paso(){
+  ciclo();
+  hist.t.push(sim.t);hist.real.push(sim.hum);hist.med.push(sim.ok?sim.humMed:null);hist.rele.push(sim.rele?1:0);
+  if(hist.t.length>40000){for(const k in hist)hist[k]=hist[k].slice(-30000);}
+  avance(cfg.intervaloMs);
+  sim.t+=cfg.intervaloMs;
+}
+function reiniciar(key){
+  const p=PRESETS[key];presetActual=key;
+  control=new ControlRiego();calib=defCalib();
+  cfg.sched=p.sched;cfg.sinEfecto=p.sinEfecto;cfg.manualFalla=false;cfg.intervaloMs=10000;cfg.secado=18;cfg.aporte=6;
+  sim={t:0,hum:p.hum,raw:0,humMed:0,ok:true,rele:false,ultReg:0};
+  metr={act:0,bloq:0,falla:0,bombeoMs:0,hMin:p.hum,hMax:p.hum};
+  logRows=[];hist={t:[],real:[],med:[],rele:[]};
+  ciclo();logRow('EVENTO','arranque');
+  const prefill=Math.round((key==='E3'?3.2:2)*3600000/cfg.intervaloMs);
+  for(let i=0;i<prefill;i++)paso();
+  term.length=0;print('Riego IoT listo. Escribe "estado" para ver el resumen.');
+  syncControles();
+}
+
+/* ---------- Comandos (mismos que el firmware) ---------- */
+const term=[];
+function print(l,cls){term.push({l,cls});if(term.length>60)term.shift();termDirty=true;}
+let termDirty=true;
+function cmd(clave,valor){
+  clave=(clave||'').trim();valor=(valor||'').trim();
+  const p={...control.param};let ok=true;
+  switch(clave){
+    case 'modo':{
+      const v=valor.toUpperCase();
+      if(v==='AUTO')control.setModo(AUTO,sim.t);
+      else if(v==='MANUAL')control.setModo(MANUAL,sim.t);
+      else if(v==='PARADA')control.setModo(PARADA,sim.t);
+      else ok=false;break;}
+    case 'umbral_inf':p.inf=parseFloat(valor);ok=control.configurar(p);break;
+    case 'umbral_sup':p.sup=parseFloat(valor);ok=control.configurar(p);break;
+    case 'tmax_min':{const m=parseInt(valor,10);ok=m>=1&&m<=120;if(ok){p.tMax=m*60000;ok=control.configurar(p);}break;}
+    case 'intervalo_s':{const s=parseInt(valor,10);ok=s>=2&&s<=3600;if(ok)cfg.intervaloMs=s*1000;break;}
+    case 'cal_seco':ciclo();calib.seco=sim.raw;break;
+    case 'cal_humedo':ciclo();calib.humedo=sim.raw;break;
+    case 'estado':
+      print('raw='+sim.raw+' hum='+sim.humMed.toFixed(1)+'% valida='+(sim.ok?1:0)+' estado='+ESTADOS[control.estado]+' modo='+MODOS[control.modo]+' inf='+control.param.inf+' sup='+control.param.sup+' seco='+calib.seco+' humedo='+calib.humedo);
+      return true;
+    default:ok=false;
+  }
+  const det='cmd '+clave+'='+valor+' '+(ok?'aplicado':'RECHAZADO');
+  logRow('EVENTO',det);print(det,ok?'':'bad');
+  ciclo();
+  syncControles();
+  return ok;
+}
+
+/* ---------- Controles ---------- */
+const R={inf:$('rInf'),sup:$('rSup'),max:$('rMax'),int:$('rInt'),sec:$('rSec'),apo:$('rApo')};
+function syncControles(){
+  const p=control.param;
+  R.inf.value=p.inf;R.sup.value=p.sup;R.max.value=Math.min(60,Math.round(p.tMax/60000));R.int.value=Math.min(120,Math.round(cfg.intervaloMs/1000));
+  R.sec.value=cfg.secado;R.apo.value=cfg.aporte;
+  $('cFalla').checked=cfg.manualFalla;$('cSinEf').checked=cfg.sinEfecto;
+  labels();
+  for(const b of $('modos').children)b.setAttribute('aria-pressed',String(b.dataset.m===({0:'AUTO',1:'MANUAL',2:'PARADA'})[control.modo]));
+  for(const b of $('speed').children)b.setAttribute('aria-pressed',String(+b.dataset.s===cfg.speed));
+  for(const b of $('ventana').children)b.setAttribute('aria-pressed',String(+b.dataset.w===cfg.ventana));
+  for(const b of $('logFiltro').children)b.setAttribute('aria-pressed',String(b.dataset.f===filtroLog));
+  for(const b of $('presets').children)b.setAttribute('aria-pressed',String(b.dataset.p===presetActual));
+  $('btnPausa').textContent=cfg.pausa?'Reanudar':'Pausar';
+}
+function labels(){
+  $('oInf').textContent=R.inf.value+' %';$('oSup').textContent=R.sup.value+' %';$('oMax').textContent=R.max.value+' min';$('oInt').textContent=R.int.value+' s';
+  $('oSec').textContent=R.sec.value+' %/h';$('oApo').textContent=R.apo.value+' %/min';
+}
+function aplicarParam(clave,valor){
+  const ok=cmd(clave,String(valor));
+  $('msgParam').textContent=ok?'':(clave.startsWith('umbral')?'Rechazado: el umbral inferior debe ser menor que el superior, entre 0 y 100.':'Valor rechazado.');
+}
+R.inf.addEventListener('input',labels);R.sup.addEventListener('input',labels);R.max.addEventListener('input',labels);R.int.addEventListener('input',labels);
+R.inf.addEventListener('change',()=>aplicarParam('umbral_inf',R.inf.value));
+R.sup.addEventListener('change',()=>aplicarParam('umbral_sup',R.sup.value));
+R.max.addEventListener('change',()=>aplicarParam('tmax_min',R.max.value));
+R.int.addEventListener('change',()=>aplicarParam('intervalo_s',R.int.value));
+R.sec.addEventListener('input',()=>{cfg.secado=+R.sec.value;labels();});
+R.apo.addEventListener('input',()=>{cfg.aporte=+R.apo.value;labels();});
+$('cFalla').addEventListener('change',e=>{cfg.manualFalla=e.target.checked;ciclo();});
+$('cSinEf').addEventListener('change',e=>{cfg.sinEfecto=e.target.checked;});
+$('btnLluvia').addEventListener('click',()=>{sim.hum=clamp(sim.hum+20,0,100);});
+$('btnSeco').addEventListener('click',()=>{sim.hum=clamp(sim.hum-20,0,100);});
+$('modos').addEventListener('click',e=>{const b=e.target.closest('button');if(b)cmd('modo',b.dataset.m);});
+$('speed').addEventListener('click',e=>{const b=e.target.closest('button');if(b){cfg.speed=+b.dataset.s;syncControles();}});
+$('ventana').addEventListener('click',e=>{const b=e.target.closest('button');if(b){cfg.ventana=+b.dataset.w;syncControles();}});
+$('logFiltro').addEventListener('click',e=>{const b=e.target.closest('button');if(b){filtroLog=b.dataset.f;logDirty=true;syncControles();}});
+$('presets').addEventListener('click',e=>{const b=e.target.closest('button');if(b){reiniciar(b.dataset.p);}});
+$('btnPausa').addEventListener('click',()=>{cfg.pausa=!cfg.pausa;syncControles();});
+$('cmdForm').addEventListener('submit',e=>{
+  e.preventDefault();const t=$('cmdIn').value.trim();if(!t)return;
+  print('> '+t,'in');
+  const i=t.indexOf(' ');cmd(i<0?t:t.slice(0,i),i<0?'':t.slice(i+1));
+  $('cmdIn').value='';
+});
+
+/* ---------- Copiar ---------- */
+async function copiar(texto,btn){
+  try{
+    await navigator.clipboard.writeText(texto);
+    if(btn){const o=btn.textContent;btn.textContent='Copiado';setTimeout(()=>btn.textContent=o,1400);}
+  }catch(err){
+    $('fb').hidden=false;const ta=$('fbText');ta.value=texto;ta.focus();ta.select();
+  }
+}
+$('fbClose').addEventListener('click',()=>{$('fb').hidden=true;});
+$('btnCsv').addEventListener('click',e=>{
+  const h='marca_tiempo,tipo,raw_adc,humedad_pct,estado,rele,modo,detalle';
+  const f=(r)=>[r.marca,r.tipo,r.raw,r.hum.toFixed(1),r.estado,r.rele,r.modo,r.detalle].join(',');
+  copiar([h].concat(logRows.slice(-2000).map(f)).join('\n'),e.currentTarget);
+});
+
+/* ---------- Dibujo ---------- */
+const css=()=>getComputedStyle(document.documentElement);
+let ultSvg='';
+function renderStatus(){
+  const e=control.estado;
+  const pill=$('pillEstado');pill.textContent=ESTADOS[e];pill.className='pill e'+e;
+  $('humMed').textContent=sim.ok?sim.humMed.toFixed(1)+' %':'--';
+  $('rawTxt').textContent=String(sim.raw)+(sim.ok?'':' (inválida)');
+  $('releTxt').textContent=sim.rele?'ENCENDIDO':'APAGADO';
+  $('modoTxt').textContent=MODOS[control.modo];
+  $('relojTxt').textContent=clockStr(sim.t,false);
+  // esquema
+  const yv=(h)=>260-h*2.2;
+  $('soilWet').setAttribute('y',yv(sim.hum));$('soilWet').setAttribute('height',sim.hum*2.2);
+  $('lnInf').setAttribute('y1',yv(control.param.inf));$('lnInf').setAttribute('y2',yv(control.param.inf));
+  $('lnSup').setAttribute('y1',yv(control.param.sup));$('lnSup').setAttribute('y2',yv(control.param.sup));
+  $('txInf').setAttribute('y',yv(control.param.inf)+4);$('txInf').textContent='inf '+control.param.inf+' %';
+  $('txSup').setAttribute('y',yv(control.param.sup)+4);$('txSup').textContent='sup '+control.param.sup+' %';
+  $('txHum').textContent=sim.ok?sim.humMed.toFixed(0)+' %':'sin lectura';
+  $('led').setAttribute('fill',sim.rele?'var(--accent)':'var(--muted)');
+  $('txRele').textContent=sim.rele?'encendido':'apagado';
+  $('txBomba').textContent=sim.rele?(cfg.sinEfecto?'gira sin agua':'regando'):'sin riego';
+  $('hose').setAttribute('class','hose'+(sim.rele&&!cfg.sinEfecto?' on':''));
+  $('drop').setAttribute('r',sim.rele&&!cfg.sinEfecto?4:0);
+  // metricas
+  $('mAct').textContent=metr.act;$('mBomb').textContent=(metr.bombeoMs/60000).toFixed(0);
+  $('mBloq').textContent=metr.bloq;$('mFalla').textContent=metr.falla;
+  $('mRango').textContent=metr.hMin.toFixed(0)+'–'+metr.hMax.toFixed(0)+' %';
+  // estados en arquitectura
+  const k=String(e);if(k!==ultSvg){ultSvg=k;marcarEstado();}
+}
+const canvas=$('chart');
+function renderChart(){
+  const dpr=window.devicePixelRatio||1,W=canvas.clientWidth,H=canvas.clientHeight;
+  if(!W||!H)return;
+  if(canvas.width!==Math.round(W*dpr)||canvas.height!==Math.round(H*dpr)){canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);}
+  const g=canvas.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+  const st=css(),col=(n)=>st.getPropertyValue(n).trim();
+  const L=36,Rr=8,T=8,B=22,pw=W-L-Rr,ph=H-T-B;
+  const tEnd=sim.t,tStart=Math.max(0,tEnd-cfg.ventana*3600000),span=Math.max(1,tEnd-tStart);
+  const X=(t)=>L+(t-tStart)/span*pw,Y=(v)=>T+ph-(v/100)*ph;
+  g.font='11px '+col('--font-mono');g.textBaseline='middle';
+  g.strokeStyle=col('--line');g.fillStyle=col('--muted');g.lineWidth=1;
+  for(const v of [0,25,50,75,100]){g.beginPath();g.moveTo(L,Y(v));g.lineTo(W-Rr,Y(v));g.stroke();g.textAlign='right';g.fillText(v+'',L-6,Y(v));}
+  // horas
+  g.textAlign='center';g.textBaseline='top';
+  const stepH=cfg.ventana<=1?0.25:cfg.ventana<=6?1:4;
+  for(let h=Math.ceil(tStart/3600000/stepH)*stepH;h*3600000<=tEnd;h+=stepH){const x=X(h*3600000);g.fillText(clockStr(h*3600000,false).slice(-5),x,H-B+6);}
+  // indices visibles
+  let i0=hist.t.length-1;while(i0>0&&hist.t[i0-1]>=tStart)i0--;
+  i0=Math.max(0,i0);
+  // bandas de riego
+  g.fillStyle=col('--accent');g.globalAlpha=.16;
+  let ini=null;
+  for(let i=i0;i<hist.t.length;i++){
+    if(hist.rele[i]&&ini===null)ini=hist.t[i];
+    if((!hist.rele[i]||i===hist.t.length-1)&&ini!==null){const fin=hist.t[i];g.fillRect(X(ini),T,Math.max(2,X(fin)-X(ini)),ph);ini=null;}
+  }
+  g.globalAlpha=1;
+  // umbrales
+  g.setLineDash([5,4]);g.lineWidth=1.5;
+  g.strokeStyle=col('--warn');g.beginPath();g.moveTo(L,Y(control.param.inf));g.lineTo(W-Rr,Y(control.param.inf));g.stroke();
+  g.strokeStyle=col('--good');g.beginPath();g.moveTo(L,Y(control.param.sup));g.lineTo(W-Rr,Y(control.param.sup));g.stroke();
+  g.setLineDash([]);
+  // humedad real
+  g.strokeStyle=col('--muted');g.lineWidth=1.25;g.beginPath();
+  for(let i=i0;i<hist.t.length;i++){const x=X(hist.t[i]),y=Y(hist.real[i]);i===i0?g.moveTo(x,y):g.lineTo(x,y);}
+  g.stroke();
+  // humedad medida
+  g.strokeStyle=col('--accent');g.lineWidth=2;g.beginPath();let pen=false;
+  for(let i=i0;i<hist.t.length;i++){
+    if(hist.med[i]===null){pen=false;continue;}
+    const x=X(hist.t[i]),y=Y(hist.med[i]);if(!pen){g.moveTo(x,y);pen=true;}else g.lineTo(x,y);
+  }
+  g.stroke();
+  // punto final
+  const ult=hist.t.length-1;
+  if(ult>=0&&hist.med[ult]!==null){g.fillStyle=col('--accent');g.beginPath();g.arc(X(hist.t[ult]),Y(hist.med[ult]),4,0,6.283);g.fill();}
+}
+function renderLog(){
+  if(!logDirty)return;logDirty=false;
+  const rows=logRows.filter(r=>filtroLog==='TODO'||r.tipo==='EVENTO').slice(-80).reverse();
+  const esc=(s)=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  $('logBody').innerHTML=rows.map(r=>'<tr><td class="num">'+esc(r.marca)+'</td><td>'+r.tipo+'</td><td class="num">'+r.raw+'</td><td class="num">'+r.hum.toFixed(1)+'</td><td class="num">'+r.estado+'</td><td class="num">'+r.rele+'</td><td class="num">'+r.modo+'</td><td>'+esc(r.detalle)+'</td></tr>').join('');
+}
+function renderTerm(){
+  if(!termDirty)return;termDirty=false;
+  const t=$('term');
+  t.innerHTML=term.map(x=>'<div'+(x.cls?' class="'+x.cls+'"':'')+(x.cls==='bad'?' style="color:var(--bad)"':'')+'>'+String(x.l).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</div>').join('');
+  t.scrollTop=t.scrollHeight;
+}
+
+/* ---------- Bucle ---------- */
+let vistaActual='simulador',last=performance.now(),acum=0,tLog=0;
+function frame(now){
+  const dt=Math.min(0.25,(now-last)/1000);last=now;
+  if(!cfg.pausa){
+    acum+=dt*cfg.speed*1000;let n=0;
+    while(acum>=cfg.intervaloMs&&n<3000){paso();acum-=cfg.intervaloMs;n++;}
+    if(n>=3000)acum=0;
+  }
+  if(vistaActual==='simulador'||vistaActual==='arquitectura')renderStatus();
+  if(vistaActual==='simulador'){
+    renderChart();renderTerm();
+    if(now-tLog>250){tLog=now;renderLog();}
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- Navegación ---------- */
+const VISTAS=['simulador','requerimientos','arquitectura','pruebas','codigo','entrega'];
+function mostrar(){
+  let id=location.hash.replace('#','')||'simulador';if(!VISTAS.includes(id))id='simulador';
+  vistaActual=id;
+  for(const v of VISTAS)$('v-'+v).hidden=(v!==id);
+  for(const a of document.querySelectorAll('nav.tabs a')){if(a.getAttribute('href')==='#'+id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');}
+  if(id==='simulador'){logDirty=true;termDirty=true;}
+  if(id==='arquitectura'){ultSvg='';renderStatus();}
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',mostrar);
+
+/* ---------- Requerimientos ---------- */
+const REQ=[
+ {id:'RF1',t:'RF',p:'Alta',x:'Medir la humedad del suelo a intervalos configurables.',m:'medirHumedad(), sensor_utils.h, comando intervalo_s',v:'Pruebas automáticas de conversión, validación y promedio. Falta comprobar con el sensor real (prueba 1.1).',auto:true,hw:true,sim:'E2'},
+ {id:'RF2',t:'RF',p:'Alta',x:'Comparar la lectura con un umbral inferior y uno superior configurables.',m:'ControlRiego.configurar(), comandos umbral_inf y umbral_sup',v:'Pruebas automáticas de histéresis y validación de umbrales.',auto:true,hw:false,sim:'E1'},
+ {id:'RF3',t:'RF',p:'Alta',x:'Activar el riego cuando la humedad esté por debajo del umbral inferior.',m:'ControlRiego.actualizar()',v:'Prueba automática. Falta la prueba 2.1 con el relé y la bomba reales.',auto:true,hw:true,sim:'E1'},
+ {id:'RF4',t:'RF',p:'Alta',x:'Desactivar el riego cuando se alcance el umbral superior.',m:'ControlRiego.actualizar()',v:'Prueba automática. Falta la prueba 2.2 con hardware.',auto:true,hw:true,sim:'E1'},
+ {id:'RF5',t:'RF',p:'Alta',x:'Registrar lecturas, fecha y hora, y eventos de activación y desactivación.',m:'registro.h (LittleFS, CSV)',v:'Prueba 1.3: comando volcar y revisión del CSV en el ESP32. Aún no probado en hardware.',auto:false,hw:true},
+ {id:'RF6',t:'RF',p:'Media',x:'Permitir el monitoreo del estado y de las lecturas, si hay conectividad.',m:'comunicacion.h (Wi-Fi y MQTT)',v:'Prueba 3.1 con un broker MQTT. Aún no probado en hardware.',auto:false,hw:true},
+ {id:'RF7',t:'RF',p:'Media',x:'Permitir un modo manual o de parada para apagar el riego.',m:'Modo MANUAL_ON y PARADA',v:'Pruebas automáticas. Falta la prueba 2.4 en hardware.',auto:true,hw:true,sim:'E1'},
+ {id:'RNF1',t:'RNF',p:'Alta',x:'Usar componentes de bajo costo y disponibles en el mercado colombiano.',m:'Lista de componentes (Tabla 9 del documento maestro)',v:'Comparar el costo real con el presupuesto.',auto:false,hw:false,doc:true},
+ {id:'RNF2',t:'RNF',p:'Alta',x:'Aislar la parte de control de la de potencia y proteger contra agua y polvo.',m:'Relé, fuente separada y caja de protección',v:'Inspección y foto del montaje.',auto:false,hw:true},
+ {id:'RNF3',t:'RNF',p:'Alta',x:'Operar de forma segura ante fallas del sensor o de la conexión, por ejemplo con tiempo máximo de bombeo.',m:'Estados FALLA_SENSOR y BLOQUEO_TIEMPO',v:'Pruebas automáticas (falla, tiempo máximo, desbordamiento de millis). Falta la prueba 2.5 en hardware.',auto:true,hw:true,sim:'E4'},
+ {id:'RNF4',t:'RNF',p:'Media',x:'Proteger el acceso al monitoreo con credenciales y no identificar a los productores.',m:'secrets.h, usuario y clave MQTT',v:'Revisión del código y del mensaje publicado. La conexión del prototipo no usa TLS.',auto:false,hw:false,doc:true},
+ {id:'RNF5',t:'RNF',p:'Media',x:'Diseño modular para facilitar ampliaciones futuras.',m:'Un archivo por responsabilidad; la lógica no depende del hardware',v:'Las pruebas compilan la lógica en un PC sin el ESP32.',auto:true,hw:false}
+];
+let filtroReq='todos';
+function renderReq(){
+  const n=REQ.length,na=REQ.filter(r=>r.auto).length,nh=REQ.filter(r=>r.hw).length;
+  $('reqResumen').innerHTML='<div><div class="lbl">Requerimientos</div><div class="mono" style="font-size:22px">'+n+'</div></div><div><div class="lbl">Con prueba automática</div><div class="mono" style="font-size:22px">'+na+'</div></div><div><div class="lbl">Falta prueba física</div><div class="mono" style="font-size:22px">'+nh+'</div></div>';
+  const f=filtroReq;
+  const lista=REQ.filter(r=>f==='todos'||f===r.t||f===r.p||(f==='hw'&&r.hw));
+  $('reqLista').innerHTML=lista.map(r=>'<details><summary><span class="id">'+r.id+'</span><span>'+r.x+'</span><span class="tags"><span class="pill doc">'+r.p+'</span>'+(r.auto?'<span class="pill ok">Probado en PC</span>':'')+(r.hw?'<span class="pill pend">Falta prueba física</span>':'')+(r.doc?'<span class="pill doc">Documental</span>':'')+'</span></summary><div class="body"><div><span class="lbl">Módulo</span><br>'+r.m+'</div><div><span class="lbl">Verificación</span><br>'+r.v+'</div>'+(r.sim?'<div><button class="btn" data-sim="'+r.sim+'">Probarlo en el simulador</button></div>':'')+'</div></details>').join('');
+  for(const b of document.querySelectorAll('#reqFiltros .chip'))b.setAttribute('aria-pressed',String(b.dataset.f===filtroReq));
+}
+$('reqFiltros').addEventListener('click',e=>{const b=e.target.closest('button');if(b){filtroReq=b.dataset.f;renderReq();}});
+$('reqLista').addEventListener('click',e=>{const b=e.target.closest('[data-sim]');if(b){reiniciar(b.dataset.sim);location.hash='#simulador';}});
+
+/* ---------- Arquitectura ---------- */
+const BLQ={
+ sensor:{n:'Sensor capacitivo',s:'GPIO34 · ADC1',f:'Entrega una señal analógica que depende del contenido de agua del suelo: valor alto en seco y bajo en húmedo. Requiere calibración en el suelo de prueba.',p:'VCC 3.3 V · GND · AOUT → GPIO34 (ADC1, compatible con Wi-Fi)',sw:'sensor_utils.h: validación (100–4000), promedio de 8 lecturas y conversión lineal a %',r:'RF1, RNF3'},
+ esp32:{n:'ESP32',s:'Procesa y decide',f:'Promedia lecturas, convierte a %, aplica la máquina de estados con histéresis y comanda el relé. Sigue regando por umbrales aunque no haya Wi-Fi.',p:'GPIO34 entrada analógica · GPIO26 salida al relé',sw:'riego_iot.ino y control_riego.h. Guarda umbrales y calibración en memoria no volátil.',r:'RF1 a RF7, RNF3, RNF5'},
+ rele:{n:'Módulo relé',s:'GPIO26',f:'Conecta el control con la bomba y aísla la parte de potencia. Arranca siempre apagado y se apaga si el sensor falla o se supera el tiempo máximo de bombeo.',p:'VCC 5 V · GND · IN → GPIO26. Activo en bajo por defecto (RELE_ACTIVO_BAJO).',sw:'aplicarRele() en riego_iot.ino',r:'RNF2, RNF3'},
+ bomba:{n:'Bomba o electroválvula',s:'Baja potencia',f:'Aplica el agua al cultivo. Se alimenta con fuente propia y fusible, por los contactos COM y NO del relé.',p:'Diodo de rueda libre si es motor DC o bobina. Sin tensión de red.',sw:'Sin software propio',r:'RNF2'},
+ registro:{n:'Registro local CSV',s:'LittleFS',f:'Guarda una lectura por minuto y cada evento (cambio de estado, comando, arranque). Funciona sin Wi-Fi y rota el archivo al superar unos 200 KB.',p:'Memoria flash del ESP32',sw:'registro.h. Comando volcar para copiar el CSV por el puerto serie.',r:'RF5'},
+ mqtt:{n:'Wi-Fi y MQTT',s:'Puerto 1883',f:'Publica el estado en JSON cada 30 s y en cada cambio, y recibe comandos. Reintenta la conexión sin bloquear el control.',p:'Temas: riego/riego01/estado, riego/riego01/cmd/<comando>, riego/riego01/disponibilidad',sw:'comunicacion.h. Usuario y clave en secrets.h (no se sube a GitHub). Sin TLS en el prototipo.',r:'RF6, RNF4'},
+ tablero:{n:'Tablero de monitoreo',s:'Humedad e historial',f:'Muestra humedad, estado del riego y el historial de activaciones. El mensaje solo lleva datos del suelo y del sistema, sin identificar productores.',p:'Plataforma de código abierto o servicio gratuito, por definir',sw:'Suscripción al tema de estado',r:'RF6, RNF4'}
+};
+function renderFlow(id,keys){
+  const h=[];keys.forEach((k,i)=>{if(i)h.push('<div class="arrow" aria-hidden="true"></div>');const b=BLQ[k];h.push('<button class="blk" data-k="'+k+'" aria-pressed="false"><b>'+b.n+'</b><span>'+b.s+'</span></button>');});
+  $(id).innerHTML=h.join('');
+}
+function detalle(k){
+  const b=BLQ[k];
+  for(const x of document.querySelectorAll('.blk'))x.setAttribute('aria-pressed',String(x.dataset.k===k));
+  $('detalle').innerHTML='<dt>Bloque</dt><dd><b>'+b.n+'</b></dd><dt>Función</dt><dd>'+b.f+'</dd><dt>Pines y conexión</dt><dd>'+b.p+'</dd><dt>Software</dt><dd>'+b.sw+'</dd><dt>Requerimientos</dt><dd>'+b.r+'</dd>';
+}
+document.querySelector('#v-arquitectura').addEventListener('click',e=>{const b=e.target.closest('.blk');if(b)detalle(b.dataset.k);});
+const EST=[
+ {n:'REPOSO',r:'Relé apagado',e:'Al arrancar, al alcanzar el umbral superior, al terminar la espera o al recuperarse el sensor.',s:'Humedad bajo el umbral inferior (AUTO) o modo MANUAL.'},
+ {n:'REGANDO',r:'Relé encendido',e:'Humedad bajo el umbral inferior (AUTO) o modo MANUAL.',s:'Humedad en el umbral superior, tiempo máximo de bombeo, lectura inválida o modo PARADA.'},
+ {n:'BLOQUEO_TIEMPO',r:'Relé apagado',e:'El bombeo continuo alcanza el tiempo máximo.',s:'Tras la espera obligatoria (15 min por defecto) vuelve a REPOSO.'},
+ {n:'FALLA_SENSOR',r:'Relé apagado',e:'Lectura inválida: sensor desconectado, en corto o con menos de la mitad de las 8 lecturas válidas.',s:'La lectura vuelve a ser válida: pasa a REPOSO.'}
+];
+function renderEstados(){
+  $('estados').innerHTML=EST.map((s,i)=>'<div class="state" data-e="'+i+'"><b>'+s.n+'</b><div><span class="lbl">Salida</span><br>'+s.r+'</div><div><span class="lbl">Entra cuando</span><br>'+s.e+'</div><div><span class="lbl">Sale cuando</span><br>'+s.s+'</div></div>').join('');
+}
+function marcarEstado(){for(const s of document.querySelectorAll('.state'))s.classList.toggle('active',+s.dataset.e===control.estado);}
+
+/* ---------- Pruebas ---------- */
+const PRUEBAS=[
+ ['1.1','Lectura periódica (RF1)','Deja el sensor en el suelo, observa "estado" varias veces y cambia intervalo_s.','Lecturas estables y coherentes con la humedad; el intervalo cambia.'],
+ ['1.2','Validación de lectura (RNF3)','Desconecta el cable del sensor.','Estado FALLA_SENSOR y relé apagado.'],
+ ['1.3','Registro (RF5)','Deja correr 10 min y envía volcar.','CSV con lecturas cada minuto, eventos y hora.'],
+ ['2.1','Activa bajo el umbral inferior (RF3)','Con suelo seco o umbral_inf alto, observa el relé.','Relé encendido y estado REGANDO.'],
+ ['2.2','Desactiva en el umbral superior (RF4)','Deja regar hasta alcanzar el umbral superior.','Relé apagado y estado REPOSO.'],
+ ['2.3','Histéresis (RF2)','Con humedad entre ambos umbrales.','No enciende ni apaga repetidamente.'],
+ ['2.4','Manual y parada (RF7)','Envía modo MANUAL y luego modo PARADA.','Manual enciende; parada apaga de inmediato.'],
+ ['2.5','Tiempo máximo (RNF3)','Bomba sin agua o tmax_min 1 con suelo seco.','BLOQUEO_TIEMPO, relé apagado y espera.'],
+ ['2.6','Reinicio seguro','Reinicia la placa con el riego encendido.','El relé arranca apagado y los umbrales se conservan.'],
+ ['3.1','Monitoreo MQTT (RF6)','Suscríbete a riego/riego01/estado.','Mensaje JSON cada 30 s y en cada cambio.'],
+ ['3.2','Comandos remotos','Publica PARADA en riego/riego01/cmd/modo.','El riego se apaga y queda el evento en el registro.'],
+ ['3.3','Sin red','Apaga el Wi-Fi.','El control y el registro continúan.'],
+ ['3.4','Credenciales (RNF4)','Revisa que secrets.h no esté en GitHub y que el mensaje no identifique productores.','Cumple.']
+];
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+let resP=LS.get('riego-iot-pruebas-v1',{});
+function renderPruebas(){
+  $('pruebasLista').innerHTML=PRUEBAS.map(p=>{const r=resP[p[0]]||{};return '<div class="test"><span class="id">'+p[0]+'</span><div><b>'+p[1]+'</b><small>'+p[2]+'</small><small>Esperado: '+p[3]+'</small></div><div class="ctl"><select data-id="'+p[0]+'" aria-label="Resultado de la prueba '+p[0]+'"><option value="">Pendiente</option><option value="ok"'+(r.e==='ok'?' selected':'')+'>Cumple</option><option value="no"'+(r.e==='no'?' selected':'')+'>No cumple</option></select><input type="text" data-obs="'+p[0]+'" placeholder="Observaciones" value="'+(r.o||'').replace(/"/g,'&quot;')+'" aria-label="Observaciones de la prueba '+p[0]+'"></div></div>';}).join('');
+  progresoPruebas();
+}
+function progresoPruebas(){
+  const ok=PRUEBAS.filter(p=>(resP[p[0]]||{}).e==='ok').length;
+  $('pgPruebas').style.width=(ok/PRUEBAS.length*100)+'%';
+  $('pgTxt').textContent=ok+' de '+PRUEBAS.length+' cumplen';
+}
+$('pruebasLista').addEventListener('change',e=>{if(e.target.dataset.id){const k=e.target.dataset.id;resP[k]={...(resP[k]||{}),e:e.target.value};LS.set('riego-iot-pruebas-v1',resP);progresoPruebas();}});
+$('pruebasLista').addEventListener('input',e=>{if(e.target.dataset.obs){const k=e.target.dataset.obs;resP[k]={...(resP[k]||{}),o:e.target.value};LS.set('riego-iot-pruebas-v1',resP);}});
+$('btnTabla').addEventListener('click',e=>{
+  const n={ok:'Sí',no:'No','':'Pendiente'};
+  const l=['| ID | Prueba | Respuesta esperada | ¿Cumple? | Observaciones |','|---|---|---|---|---|'];
+  for(const p of PRUEBAS){const r=resP[p[0]]||{};l.push('| '+p[0]+' | '+p[1]+' | '+p[3]+' | '+n[r.e||'']+' | '+(r.o||'')+' |');}
+  copiar(l.join('\n'),e.currentTarget);
+});
+
+/* calculadora de calibracion */
+let cal=[{mh:130,ms:100,raw:2475},{mh:145,ms:100,raw:2215},{mh:158,ms:100,raw:1990},{mh:170,ms:100,raw:1740}];
+function renderCal(){
+  $('calBody').innerHTML=cal.map((r,i)=>'<tr data-i="'+i+'"><td>'+(i+1)+(i<4&&r.ej?' <span class="muted">(ejemplo)</span>':'')+'</td><td><input type="number" data-k="mh" value="'+(r.mh??'')+'" aria-label="Masa húmeda"></td><td><input type="number" data-k="ms" value="'+(r.ms??'')+'" aria-label="Masa seca"></td><td><input type="number" data-k="raw" value="'+(r.raw??'')+'" aria-label="Lectura ADC"></td><td class="num" data-o="g"></td><td class="num" data-o="s"></td><td class="num" data-o="e"></td></tr>').join('');
+  calcular();
+}
+cal.forEach(r=>r.ej=true);
+function calcular(){
+  const seco=+$('cSeco').value,hum=+$('cHum').value;
+  const pts=[];
+  document.querySelectorAll('#calBody tr').forEach(tr=>{
+    const r=cal[+tr.dataset.i];
+    const g=(r.ms>0&&r.mh>=r.ms)?(r.mh-r.ms)/r.ms*100:null;
+    const s=(r.raw!==''&&r.raw!=null&&seco!==hum&&!isNaN(r.raw))?clamp(100*(seco-r.raw)/(seco-hum),0,100):null;
+    tr.querySelector('[data-o=g]').textContent=g===null?'--':g.toFixed(1)+' %';
+    tr.querySelector('[data-o=s]').textContent=s===null?'--':s.toFixed(1)+' %';
+    tr.querySelector('[data-o=e]').textContent=(g===null||s===null)?'--':Math.abs(g-s).toFixed(1)+' %';
+    if(g!==null&&s!==null)pts.push([s,g]);
+  });
+  let h='<div class="m"><span class="lbl">Muestras válidas</span><span class="v">'+pts.length+'</span></div>';
+  if(pts.length){const mae=pts.reduce((a,p)=>a+Math.abs(p[1]-p[0]),0)/pts.length;h+='<div class="m"><span class="lbl">Error absoluto medio</span><span class="v">'+mae.toFixed(1)+' %</span></div>';}
+  if(pts.length>=3){
+    const n=pts.length,sx=pts.reduce((a,p)=>a+p[0],0),sy=pts.reduce((a,p)=>a+p[1],0);
+    const sxx=pts.reduce((a,p)=>a+p[0]*p[0],0),sxy=pts.reduce((a,p)=>a+p[0]*p[1],0);
+    const den=n*sxx-sx*sx;
+    if(den!==0){
+      const a=(n*sxy-sx*sy)/den,b=(sy-a*sx)/n,my=sy/n;
+      const ssT=pts.reduce((q,p)=>q+(p[1]-my)**2,0),ssR=pts.reduce((q,p)=>q+(p[1]-(a*p[0]+b))**2,0);
+      h+='<div class="m"><span class="lbl">Ajuste gravimétrica ≈ a·sensor + b</span><span class="v" style="font-size:16px">a='+a.toFixed(3)+' · b='+b.toFixed(2)+'</span></div><div class="m"><span class="lbl">R²</span><span class="v">'+(ssT?(1-ssR/ssT).toFixed(3):'--')+'</span></div>';
+    }
+  }
+  $('calRes').innerHTML=h;
+}
+$('calBody').addEventListener('input',e=>{const tr=e.target.closest('tr');if(!tr)return;const r=cal[+tr.dataset.i];r[e.target.dataset.k]=e.target.value===''?'':+e.target.value;r.ej=false;calcular();});
+$('cSeco').addEventListener('input',calcular);$('cHum').addEventListener('input',calcular);
+$('calAdd').addEventListener('click',()=>{cal.push({mh:'',ms:'',raw:''});renderCal();});
+$('calClr').addEventListener('click',()=>{cal=[{mh:'',ms:'',raw:''},{mh:'',ms:'',raw:''},{mh:'',ms:'',raw:''}];renderCal();});
+
+/* ---------- Código ---------- */
+const CODE={control:`// control_riego.h
+// Lógica de decisión del riego por umbrales con histéresis (RF2, RF3, RF4, RF7, RNF3, RNF5).
+// Módulo SIN dependencias de hardware: se compila en el ESP32 y también en un PC
+// para ejecutar las pruebas automáticas (carpeta /pruebas).
+#pragma once
+#include <stdint.h>
+
+enum class Modo : uint8_t {
+  AUTO = 0,       // decide según humedad y umbrales
+  MANUAL_ON = 1,  // riego forzado (sigue limitado por el tiempo máximo de bombeo)
+  PARADA = 2      // riego apagado siempre (RF7)
+};
+
+enum class Estado : uint8_t {
+  REPOSO = 0,          // relé apagado, esperando
+  REGANDO = 1,         // relé encendido
+  BLOQUEO_TIEMPO = 2,  // se superó el tiempo máximo de bombeo: relé apagado y en espera (RNF3)
+  FALLA_SENSOR = 3     // lectura inválida: relé apagado (RNF3)
+};
+
+struct ParamControl {
+  float umbralInf = 30.0f;               // % humedad: por debajo se activa el riego (provisional)
+  float umbralSup = 60.0f;               // % humedad: al alcanzarlo se desactiva el riego (provisional)
+  uint32_t tMaxBombeoMs = 10UL * 60000;  // tiempo continuo máximo de bombeo (10 min, provisional)
+  uint32_t tEsperaMs = 15UL * 60000;     // espera obligatoria tras un bloqueo por tiempo máximo
+};
+
+struct Salida {
+  bool releOn;        // orden para el relé
+  bool cambioEstado;  // true si en esta llamada cambió el estado (para registrar el evento)
+  Estado estado;
+};
+
+class ControlRiego {
+ public:
+  ControlRiego() {}
+
+  // Valida: umbralInf < umbralSup, ambos entre 0 y 100. Devuelve false y no aplica si es inválido.
+  bool configurar(const ParamControl& p) {
+    if (!(p.umbralInf >= 0.0f && p.umbralSup <= 100.0f && p.umbralInf < p.umbralSup)) return false;
+    if (p.tMaxBombeoMs == 0) return false;
+    param_ = p;
+    return true;
+  }
+
+  const ParamControl& parametros() const { return param_; }
+  Modo modo() const { return modo_; }
+  Estado estado() const { return estado_; }
+
+  void setModo(Modo m, uint32_t ahoraMs) {
+    if (m == modo_) return;
+    modo_ = m;
+    if (m == Modo::PARADA) cambiarEstado(Estado::REPOSO, ahoraMs);
+  }
+
+  // Se llama en cada ciclo de medición.
+  // ahoraMs: millis(); la aritmética sin signo tolera el desbordamiento a los ~49 días.
+  Salida actualizar(float humedadPct, bool lecturaValida, uint32_t ahoraMs) {
+    bool cambio = false;
+    Estado previo = estado_;
+
+    if (modo_ == Modo::PARADA) {
+      cambio = forzar(Estado::REPOSO, ahoraMs);
+      return armar(cambio, previo);
+    }
+
+    // Falla de sensor: prioridad máxima, apaga el riego (RNF3).
+    if (!lecturaValida) {
+      cambio = forzar(Estado::FALLA_SENSOR, ahoraMs);
+      return armar(cambio, previo);
+    }
+    if (estado_ == Estado::FALLA_SENSOR) {  // el sensor se recuperó
+      cambiarEstado(Estado::REPOSO, ahoraMs);
+    }
+
+    // Bloqueo por tiempo máximo: espera obligatoria antes de volver a regar.
+    if (estado_ == Estado::BLOQUEO_TIEMPO) {
+      if ((uint32_t)(ahoraMs - tEstado_) >= param_.tEsperaMs) cambiarEstado(Estado::REPOSO, ahoraMs);
+      return armar(estado_ != previo, previo);
+    }
+
+    if (modo_ == Modo::MANUAL_ON) {
+      if (estado_ != Estado::REGANDO) cambiarEstado(Estado::REGANDO, ahoraMs);
+    } else {  // AUTO
+      if (estado_ == Estado::REPOSO && humedadPct < param_.umbralInf) {
+        cambiarEstado(Estado::REGANDO, ahoraMs);
+      } else if (estado_ == Estado::REGANDO && humedadPct >= param_.umbralSup) {
+        cambiarEstado(Estado::REPOSO, ahoraMs);
+      }
+    }
+
+    // Límite de bombeo continuo (aplica en AUTO y MANUAL_ON).
+    if (estado_ == Estado::REGANDO && (uint32_t)(ahoraMs - tEstado_) >= param_.tMaxBombeoMs) {
+      cambiarEstado(Estado::BLOQUEO_TIEMPO, ahoraMs);
+    }
+
+    return armar(estado_ != previo, previo);
+  }
+
+ private:
+  ParamControl param_;
+  Modo modo_ = Modo::AUTO;
+  Estado estado_ = Estado::REPOSO;
+  uint32_t tEstado_ = 0;  // instante en que se entró al estado actual
+
+  void cambiarEstado(Estado e, uint32_t ahoraMs) { estado_ = e; tEstado_ = ahoraMs; }
+  bool forzar(Estado e, uint32_t ahoraMs) {
+    if (estado_ == e) return false;
+    cambiarEstado(e, ahoraMs);
+    return true;
+  }
+  Salida armar(bool cambio, Estado previo) const {
+    Salida s;
+    s.estado = estado_;
+    s.releOn = (estado_ == Estado::REGANDO);
+    s.cambioEstado = cambio || (estado_ != previo);
+    return s;
+  }
+};
+`,sensor:`// sensor_utils.h
+// Conversión y validación de la lectura del sensor capacitivo de humedad del suelo (RF1, RNF3).
+#pragma once
+#include <stdint.h>
+
+// Calibración de dos puntos. Un sensor capacitivo suele dar valor ADC ALTO en seco y BAJO en húmedo.
+// Estos valores son DE PARTIDA: deben reemplazarse con los medidos en el suelo de prueba.
+struct Calibracion {
+  int rawSeco = 3000;    // lectura ADC con el sensor en suelo seco / al aire (CALIBRAR)
+  int rawHumedo = 1300;  // lectura ADC con el sensor en suelo saturado (CALIBRAR)
+  int rawMin = 100;      // por debajo de esto se considera sensor desconectado/en corto
+  int rawMax = 4000;     // por encima de esto se considera sensor desconectado/flotante
+};
+
+inline bool lecturaValida(int raw, const Calibracion& c) {
+  return raw >= c.rawMin && raw <= c.rawMax;
+}
+
+// Interpolación lineal entre los dos puntos de calibración, saturada entre 0 y 100.
+inline float rawAPorcentaje(int raw, const Calibracion& c) {
+  if (c.rawSeco == c.rawHumedo) return 0.0f;
+  float pct = 100.0f * (float)(c.rawSeco - raw) / (float)(c.rawSeco - c.rawHumedo);
+  if (pct < 0.0f) pct = 0.0f;
+  if (pct > 100.0f) pct = 100.0f;
+  return pct;
+}
+
+// Promedio de varias lecturas para reducir ruido. Descarta las inválidas;
+// devuelve false si no queda al menos la mitad de lecturas válidas.
+inline bool promedioValido(const int* lecturas, int n, const Calibracion& c, int& promedio) {
+  long suma = 0;
+  int validas = 0;
+  for (int i = 0; i < n; i++) {
+    if (lecturaValida(lecturas[i], c)) { suma += lecturas[i]; validas++; }
+  }
+  if (validas == 0 || validas < (n + 1) / 2) return false;
+  promedio = (int)(suma / validas);
+  return true;
+}
+`};
+$('codeControl').textContent=CODE.control;$('codeSensor').textContent=CODE.sensor;
+document.querySelector('#v-codigo').addEventListener('click',e=>{const b=e.target.closest('[data-copy]');if(b)copiar(CODE[b.dataset.copy],b);});
+
+/* ---------- Entrega ---------- */
+const ITEMS=[
+ 'Ajustar el documento maestro con las recomendaciones del tutor de la Fase 3',
+ 'Corregir la numeración de tablas y la Lista de tablas',
+ 'Agregar metodología de desarrollo, diseño integral y desarrollo del prototipo (TRL5)',
+ 'Armar el prototipo, calibrar el sensor y registrar las pruebas',
+ 'Subir el código a GitHub sin secrets.h y dar acceso de lectura al tutor',
+ 'Grabar el video de máximo 10 minutos con la cámara encendida',
+ 'Agregar como anexos el enlace de GitHub y el del video',
+ 'Subir un solo documento maestro al foro "Formulación del proceso metodológico investigativo"'
+];
+let marcados=LS.get('riego-iot-entrega-v1',[]);
+function renderChecks(){
+  $('checks').innerHTML=ITEMS.map((t,i)=>'<label class="check-item"><input type="checkbox" data-i="'+i+'"'+(marcados.includes(i)?' checked':'')+'><span>'+t+'</span></label>').join('');
+  $('pgEntrega').style.width=(marcados.length/ITEMS.length*100)+'%';
+}
+$('checks').addEventListener('change',e=>{const i=+e.target.dataset.i;marcados=marcados.filter(x=>x!==i);if(e.target.checked)marcados.push(i);LS.set('riego-iot-entrega-v1',marcados);$('pgEntrega').style.width=(marcados.length/ITEMS.length*100)+'%';});
+function cuenta(){
+  const fin=Date.UTC(2026,10,23,4,59,0);const d=fin-Date.now();
+  if(d<=0){$('cuenta').textContent='El plazo ya venció';return;}
+  const dd=Math.floor(d/864e5),hh=Math.floor(d%864e5/36e5),mm=Math.floor(d%36e5/6e4);
+  $('cuenta').textContent=dd+' d '+hh+' h '+mm+' min';
+}
+const SEG=[[0,0.75,'Presentación','Presentación del equipo, del proyecto y del problema: riego sin datos continuos del suelo.'],[0.75,1.75,'Arquitectura','Sensor, ESP32, relé, bomba, MQTT y tablero, con el diagrama del documento maestro.'],[1.75,3,'Prototipo','El prototipo físico: componentes, conexiones, caja y separación entre control y potencia.'],[3,4,'Código','Estructura del repositorio de GitHub y ejecución de las pruebas automáticas (0 fallidas).'],[4,5,'Calibración','Valores en seco y húmedo y comparación con la humedad gravimétrica.'],[5,7.5,'Demostración','Suelo seco enciende el relé, el umbral superior lo apaga, modo manual y parada, y falla segura al desconectar el sensor.'],[7.5,8.5,'Monitoreo','Mensajes MQTT de estado, un comando remoto y el registro CSV.'],[8.5,9.5,'Resultados','Resultados medidos y limitaciones (calibración, comparación de agua si no fue posible).'],[9.5,10,'Cierre','Cierre.']];
+function renderTL(){
+  $('timeline').innerHTML=SEG.map((s,i)=>'<button style="flex:'+(s[1]-s[0])+'" data-i="'+i+'" aria-pressed="'+(i===0)+'" title="'+s[2]+'">'+(s[1]-s[0]>=1?s[2]:'')+'</button>').join('');
+  tl(0);
+}
+function tl(i){
+  const s=SEG[i];
+  for(const b of $('timeline').children)b.setAttribute('aria-pressed',String(+b.dataset.i===i));
+  const f=(m)=>Math.floor(m)+':'+String(Math.round((m%1)*60)).padStart(2,'0');
+  $('tlDetalle').innerHTML='<span class="mono">'+f(s[0])+'–'+f(s[1])+'</span> · <b>'+s[2]+'.</b> '+s[3]+' No muestres contraseñas de Wi-Fi o MQTT en pantalla.';
+}
+$('timeline').addEventListener('click',e=>{const b=e.target.closest('button');if(b)tl(+b.dataset.i);});
+
+/* ---------- Inicio ---------- */
+renderFlow('flow1',['sensor','esp32','rele','bomba']);
+renderFlow('flow2',['esp32','registro','mqtt','tablero']);
+detalle('esp32');renderEstados();renderReq();renderPruebas();renderCal();renderChecks();renderTL();cuenta();setInterval(cuenta,60000);
+reiniciar('E1');
+mostrar();
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

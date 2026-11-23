@@ -1,0 +1,5 @@
+firmware/riego_iot/secrets.h
+pruebas/test_control
+pruebas/sim_escenarios
+*.o
+.DS_Store
