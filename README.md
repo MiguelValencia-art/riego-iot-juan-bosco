@@ -2,9 +2,9 @@ Pagina Web Funcional = Esta en el archivo Riego IoT Juan Bosco en HTML localhost
 # Sistema de riego automatizado con IoT — vereda Juan Bosco, Villavicencio
 
 Prototipo funcional del proyecto de grado **202016907** (Ingeniería de Sistemas, UNAD).
-Autores: Nelson Steven Duarte Traslaviña 
-Miguel Ángel Valencia Gómez
-Ingri Alvarez Gamboa
+Autores: Nelson Steven Duarte Traslaviña - 
+Miguel Ángel Valencia Gómez -
+Ingri Alvarez Gamboa -
 Tutor: Daniel Andrés Guzmán Arevalo.
 
 El sistema mide la humedad del suelo con un sensor capacitivo, decide con dos umbrales (histéresis) y activa
